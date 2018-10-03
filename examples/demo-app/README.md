@@ -21,3 +21,8 @@ then
 ```
 npm start
 ```
+
+### SemiProduction deploy
+```
+npm run buildProd
+```

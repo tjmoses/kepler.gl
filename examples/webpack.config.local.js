@@ -44,7 +44,7 @@ function makeLocalDevConfig(EXAMPLE_DIR = LIB_DIR) {
       }
     },
 
-    devtool: 'source-map',
+    // devtool: 'source-map',
 
     resolve: {
       alias: {

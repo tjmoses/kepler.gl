@@ -25,6 +25,8 @@
 const resolve = require('path').resolve;
 const join = require('path').join;
 const webpack = require('webpack');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const CONFIG = {
   // bundle app.js and everything it imports, recursively.
@@ -32,7 +34,13 @@ const CONFIG = {
     app: resolve('./src/main.js')
   },
 
-  devtool: 'source-map',
+  // Generate a bundle in dist folder
+  output: {
+    path: resolve('./dist'),
+    filename: 'bundle.js'
+  },
+
+  // devtool: 'source-map',
 
   resolve: {
     // Make src files outside of this dir resolve modules in our node_modules folder
@@ -40,8 +48,7 @@ const CONFIG = {
   },
 
   module: {
-    rules: [
-      {
+    rules: [{
         test: /\.js$/,
         loader: 'babel-loader',
         include: join(__dirname, 'src'),
@@ -52,21 +59,23 @@ const CONFIG = {
         test: /\.json$/,
         loader: 'json-loader',
         exclude: [/node_modules/]
-      }
-    ]
-  },
-
+      },
+    ]},
   node: {
     fs: 'empty'
   },
 
   // Optional: Enables reading mapbox token from environment variable
   plugins: [
-    new webpack.EnvironmentPlugin(['MapboxAccessToken'])
+    new webpack.EnvironmentPlugin(['MapboxAccessToken']),
+    new UglifyJsPlugin(),
+    new CopyWebpackPlugin([ // Used to copy static assets
+      { from: 'index.html', to: './' },
+    ]),
   ]
 };
 
 // This line enables bundling against src in this repo rather than installed deck.gl module
 module.exports = env => {
   return env ? require('../webpack.config.local')(CONFIG, __dirname)(env) : CONFIG;
-};
+}

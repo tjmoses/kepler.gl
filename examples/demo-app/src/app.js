@@ -24,8 +24,12 @@ import window from 'global/window';
 import {connect} from 'react-redux';
 import Banner from './components/banner';
 import Announcement from './components/announcement';
+import axios from 'axios';
+import {toggleModal} from 'kepler.gl/actions';
 
 import {loadSampleConfigurations} from './actions';
+// import { LOCATION_CHANGE } from 'react-router-redux';
+
 import {replaceLoadDataModal} from './factories/load-data-modal';
 
 const KeplerGl = require('kepler.gl/components').injectComponents([
@@ -38,7 +42,7 @@ const MAPBOX_TOKEN = process.env.MapboxAccessToken; // eslint-disable-line
 /* eslint-disable no-unused-vars */
 import sampleTripData from './data/sample-trip-data';
 import sampleGeojson from './data/sample-geojson.json';
-import sampleH3Data from './data/sample-hex-id-csv';
+
 import sampleIconCsv, {config as savedMapConfig} from './data/sample-icon-csv';
 import {updateVisData, addDataToMap} from 'kepler.gl/actions';
 import Processors from 'kepler.gl/processors';
@@ -78,18 +82,35 @@ class App extends Component {
   }
 
   componentDidMount() {
+   this.props.dispatch(toggleModal(null))
     // delay 2s to show the banner
-    /* disable show banners 
     if (!window.localStorage.getItem('kgHideBanner')) {
-      window.setTimeout(this._showBanner, 3000);
+      // window.setTimeout(this._showBanner, 3000);
     }
-    */
     // load sample data
-    // this._loadSampleData();
+   // this._loadSampleData();
+
+    const baseURL = 'http://services.arcgis.com/uCXeTVveQzP4IIcx/arcgis/rest/services/Portland_Coffee_Shops/FeatureServer/0/query'; // absolute file directory
+    let query = '?where=1=1&outFields=*&outSR=4326&f=geojson'; // initial query string
+    const { search } = this.props.router.location;
+    query = search || query;  
+    this.props.router.push(query);
+      axios.get(baseURL+query)
+        .then((response) => {
+          this.props.dispatch(
+            updateVisData({
+              info: {
+                label: 'arcgis data',
+                id: 'data'
+              },
+              data: query.indexOf('geojson') > 0 ? Processors.processGeojson(response.data) : Processors.processCsvData(response.data)
+            })
+          )
+        });   
   }
 
   componentWillUnmount() {
-    window.removeEventListener('resize', this._onResize);
+    window.remmoveEventListener('resize', this._onResize);
   }
 
   _onResize = () => {
@@ -167,21 +188,6 @@ class App extends Component {
       updateVisData({
         info: {label: 'SF Zip Geo'},
         data: Processors.processGeojson(sampleGeojson)
-      })
-    );
-
-    // load h3 hexagon
-    this.props.dispatch(
-      addDataToMap({
-        datasets: [
-          {
-            info: {
-              label: 'H3 Hexagons V2',
-              id: 'h3-hex-id'
-            },
-            data: Processors.processCsvData(sampleH3Data)
-          }
-        ]
       })
     );
   }

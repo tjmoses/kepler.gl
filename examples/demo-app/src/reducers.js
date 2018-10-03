@@ -37,7 +37,7 @@ import {DEFAULT_LOADING_METHOD, LOADING_METHODS} from './constants/default-setti
 
 // INITIAL_APP_STATE
 const initialAppState = {
-  appName: 'example',
+  appName: 'GIS_Example',
   loaded: false,
   loadingMethod: DEFAULT_LOADING_METHOD,
   currentOption: DEFAULT_LOADING_METHOD.options[0],
@@ -108,7 +108,7 @@ export const loadRemoteFileDataSuccess = (state, action) => {
     ...state,
     app: {
       ...state.app,
-      isMapLoading: false // we turn of the spinner
+      isMapLoading: false // we turn off the spinner
     },
     keplerGl: {
       ...state.keplerGl, // in case you keep multiple instances

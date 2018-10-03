@@ -21,17 +21,48 @@
 import {combineReducers, createStore, applyMiddleware, compose} from 'redux';
 import {routerReducer, routerMiddleware} from 'react-router-redux';
 import {hashHistory} from 'react-router';
+import keplerGlReducer from 'kepler.gl/reducers';
 
+import logger from "redux-logger";
 import thunk from 'redux-thunk';
 import window from 'global/window';
-import {taskMiddleware} from 'react-palm/tasks';
+import {taskMiddleware} from 'react-palm';
 
 import demoReducer from './reducers';
 
+const customizedKeplerGlReducer = keplerGlReducer
+  .initialState({
+    uiState: {
+      // hide side panel to disallower user customize the map
+      readOnly: true,
+  
+      // customize which map control button to show
+      mapControls: {
+        visibleLayers: {
+          show: false,
+          isOpen: false
+        },
+        mapLegend: {
+          show: true,
+          active: true
+        },
+        toggle3d: {
+          show: false
+        },
+        splitMap: {
+          show: false
+        }
+      }
+    }
+  })
+
 const reducers = combineReducers({
+  keplerGl: customizedKeplerGlReducer,
   demo: demoReducer,
   routing: routerReducer
 });
+
+let middleware = [ taskMiddleware, thunk, routerMiddleware(hashHistory) ]
 
 export const middlewares = [
   taskMiddleware,
